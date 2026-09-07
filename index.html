@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>المنوفي | القائمة الرقمية — El Menofy Digital Menu</title>
+<meta name="description" content="القائمة الكاملة لكامل المنوفي — أسعار بالجنيه المصري. Full Kamel El Menofy menu — prices in EGP.">
+<link rel="icon" href="images/logo.png">
+<link rel="stylesheet" href="css/menu.css">
+</head>
+<body>
+
+<a class="skip" href="#main">تخطي إلى المحتوى | Skip to content</a>
+
+<header class="menu-header">
+  <div class="menu-header-inner">
+    <img class="menu-logo" src="images/logo.png" alt="كامل المنوفي" width="44" height="44">
+    <div class="menu-title">
+      <span class="menu-title-ar">كامل المنوفي</span>
+      <span class="menu-title-en">Kamel El Menofy</span>
+    </div>
+    <button id="langToggle" class="lang-toggle" type="button" aria-label="Switch language">
+      <span data-lang-current>EN</span>
+    </button>
+  </div>
+  <nav id="catNav" class="cat-nav" aria-label="Menu categories"></nav>
+</header>
+
+<main id="main">
+  <div class="draft-banner">
+    <p data-i18n="draftBanner"></p>
+  </div>
+
+  <div id="menuSections"></div>
+
+  <section class="notes-section">
+    <h2 data-i18n="notesTitle"></h2>
+    <ul id="printedNotesList" class="notes-list"></ul>
+    <p class="notes-disclaimer" data-i18n="notesDisclaimer"></p>
+  </section>
+</main>
+
+<footer class="menu-footer">
+  <img class="footer-logo" src="images/logo.png" alt="" width="28" height="28">
+  <p data-i18n="footerSlogan"></p>
+  <p class="footer-status" data-i18n="footerStatus"></p>
+</footer>
+
+<button id="topBtn" class="top-btn" type="button" aria-label="Back to top">↑</button>
+
+<script src="js/menu-data.js"></script>
+<script src="js/menu.js"></script>
+</body>
+</html>
