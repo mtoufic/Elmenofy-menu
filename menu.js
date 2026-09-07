@@ -135,7 +135,7 @@
         section.appendChild(buildGrid3Row(item));
       } else {
         var flag = null;
-        if (isNonWeightGrill) flag = t("unconfirmedPortion");
+        if (item.en === "Grilled chicken") flag = t("unconfirmedPortion");
         else if (item.reviewNote) flag = t("needsConfirm");
         var row = buildPlainRow(item, { flag: flag });
         if (item.reviewNote) row.title = item.reviewNote;
