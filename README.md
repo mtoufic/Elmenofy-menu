@@ -1,70 +1,71 @@
-# Kamel El Menofy — Digital Menu (separate from the main website)
+# Kamel El Menofy — Digital Menu
 
-Built 2026-09-07. Plain static HTML/CSS/JS, no build step, no dependencies.
+Live: **https://elmenofy-menu.pages.dev**
+
+Plain static HTML/CSS/JS. No build step, no dependencies, no framework.
+Cloudflare Pages deploys this repo automatically on every push to `main`
+(framework preset: None, build command: empty, output directory: `/`).
+
+## Repo layout is flat
+Every file sits at the repo root — `index.html` references `menu.css`, `menu.js`,
+`menu-data.js`, `logo.png` and the photos with no folder prefix. Don't reintroduce
+`css/`, `js/` or `images/` folders without updating `index.html` to match.
 
 ## What this is
-A standalone, mobile-friendly digital menu meant to be shared as a link on Facebook
-and Messenger later — kept completely separate from the approved main website
-(`website/` in the handoff), whose own menu dialog is untouched.
+A standalone digital menu for sharing on Facebook and Messenger, kept separate
+from the main website (whose own menu is untouched).
 
-- Source of truth: `menu-draft/printed-menu-transcription.json` (130 items, 12
-  categories, transcribed from the printed menu photographs). Not the old
-  Talabat/marketplace catalogue used inside the main site.
-- Bilingual: Arabic-first (RTL) with a working English (LTR) toggle, top right.
-  Toggle state is remembered locally per device (falls back to Arabic if storage
-  is unavailable).
-- All prices shown in EGP.
-- Standard grill items show three columns in the confirmed order: ½ kg, ⅓ kg, ¼ kg.
-- Same brand palette/type as the approved website (cream `#f2e4cc`, ivory
-  `#f4ead7`, ink `#231913`, red `#941b20`, gold `#d3aa4d`; Georgia/serif for
-  English headings, Geeza Pro/Noto Naskh Arabic for Arabic).
-- The official red logo (`website/public/brand/official-red.png`) is used unchanged
-  (resized for web).
+- **Source of truth:** `menu-draft/printed-menu-transcription.json` in the
+  handoff pack — 130 items, 12 categories, transcribed from the printed menu.
+  Not the older Talabat/marketplace catalogue used inside the main website.
+- **Bilingual:** Arabic-first (RTL) with a full English (LTR) toggle. The choice
+  is remembered per device, falling back to Arabic if storage is unavailable.
+- **All prices in EGP.** Standard grill items use the confirmed ½ kg / ⅓ kg / ¼ kg
+  column order.
 
-## Flagged, unconfirmed items (visible in the menu itself, not just here)
-- **Grilled chicken** (فرخة مشوية): printed 184 / 368 EGP. Portion labels are
-  NOT confirmed, so it is deliberately shown as a plain two-price row, not forced
-  into the ½/⅓/¼ kg columns. Tagged "sizes unconfirmed" / "الأحجام غير مؤكدة".
-- **Freekeh casserole with meat** (طاجن فريك باللحمة): printed price read
-  provisionally as 353 EGP. Tagged "needs confirmation" / "يحتاج تأكيد".
-- **Birell / Fayrouz** (بيريل — فيروز): printed Arabic and printed English
-  disagree on the product name. Tagged "needs confirmation" / "يحتاج تأكيد".
-- **Veal chops** (ريش بتلو): only two printed prices exist; the ¼ kg column
-  correctly shows a dash rather than a guessed number.
-- Printed policy notes (VAT included, +12% dine-in, takeaway salad flat 27 EGP)
-  are shown in the Notes section, translated for the English view, with a
-  disclaimer that they are transcribed as printed, not confirmed current policy.
-- Nothing from the old cover photo's hotline/branch text was used — it is not
-  independently confirmed.
+## Design
+Editorial rather than transactional — the opposite of the photo-grid/PDF pattern
+most Egyptian restaurant menus use online.
 
-## Running the local preview
-No server required — just open `index.html` directly in a browser (double-click,
-or drag into a browser window). Everything is self-contained relative paths
-(`css/`, `js/`, `images/`), so it works from `file://` with no internet connection.
+- **Type:** Amiri (classical Naskh) for Arabic headings, Tajawal for Arabic body,
+  Cormorant Garamond for English headings, system sans for English body.
+  Loaded from Google Fonts with `display=swap`.
+- **Palette** matches the approved website: cream `#f2e4cc`, ivory `#f4ead7`,
+  ink `#231913`, red `#941b20`, gold `#d3aa4d`. Red is reserved for the logo
+  badge alone — gold carries rules and labels, ink carries prices.
+- **Photography:** cover plus two full-bleed section breaks. Each photo honestly
+  depicts the section it introduces (`photo-skillet.jpg` before Grill specials,
+  `photo-tagine.jpg` before Casseroles). We only have a handful of approved
+  photos, so there are deliberately no per-dish thumbnails.
 
-If you'd rather serve it locally: `python3 -m http.server 8080` from inside this
-folder, then visit `http://127.0.0.1:8080/`.
+## Unconfirmed items — flagged in the menu itself
+Shown as a quiet note under the dish name. The detailed reviewer list was removed
+from the Notes section at the client's request (it read as internal QA language on
+a customer-facing page); the per-item notes and the draft line under the cover are
+what keep the page honest.
 
-## Hosting-ready
-This folder *is* the hosting-ready output — it's already flat static files with
-relative paths, so it can be uploaded as-is to any static host (e.g. Cloudflare
-Pages) when you're ready. Nothing has been deployed, no domain or `pages.dev`
-subdomain has been checked or claimed, and no publishing has happened — that
-step needs your explicit go-ahead per the handover instructions.
+- **Grilled chicken** (فرخة مشوية) — printed 184 / 368 EGP. Portion labels are
+  NOT confirmed, so it is deliberately kept out of the ½/⅓/¼ kg table.
+- **Freekeh casserole with meat** (طاجن فريك باللحمة) — price read provisionally
+  as 353 EGP.
+- **Birell / Fayrouz** (بيريل — فيروز) — printed Arabic and English names disagree.
+- **Veal chops** (ريش بتلو) — only two printed prices exist; the ¼ kg column shows
+  a dash rather than an invented number.
+- Printed policy notes (VAT included, +12% dine-in, takeaway salad 27 EGP) appear
+  in the Notes section, transcribed as printed.
+- Nothing from the old cover photo's hotline/branch text is used anywhere.
 
-## Regenerating after restaurant confirms prices
-Edit `menu-draft/printed-menu-transcription.json` (the copy in the handoff
-folder) and re-run the small generator that produced `js/menu-data.js`:
+Note that `Grilled lamb knuckle` and `Menofy special meal` are also excluded from
+the weight table, but they are simply single-price dishes — they must NOT be
+flagged as uncertain. See `GRILL_NON_WEIGHT` vs the flag logic in `menu.js`.
 
-```
-python3 gen_data.py
-```
+## Editing
+`menu-data.js` is generated from the source JSON by `gen_data.py` — regenerate it
+rather than hand-editing. Once the restaurant confirms prices, update the source
+JSON, re-run the generator, and remove the draft line in `menu.js` (`draftLine`)
+plus the per-item flags that no longer apply.
 
-(Script lives alongside this handoff; ask Claude to re-run it rather than
-hand-editing `js/menu-data.js`, which is auto-generated.)
-
-## What was deliberately NOT done
-- No ordering, cart, or booking flow (no fake submissions).
-- No contact/hotline info added (not independently confirmed).
-- Nothing published, no domain purchased, no Facebook/Messenger posting, no
-  account access changed.
+## Local preview
+Open `index.html` directly in a browser, or serve the folder with
+`python3 -m http.server 8080`. Everything uses relative paths; only the webfonts
+need a connection.

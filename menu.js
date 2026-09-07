@@ -3,143 +3,159 @@
 
   var UI = {
     ar: {
-      draftBanner:
-        "قائمة تجريبية منقولة من المنيو المطبوع — في انتظار تأكيد المطعم للأسعار والتوفر. Draft menu, pending restaurant confirmation.",
+      coverKicker: "القائمة الكاملة — الأسعار بالجنيه المصري",
+      draftLine:
+        "قائمة منقولة من المنيو المطبوع، في انتظار تأكيد المطعم للأسعار والتوفر. البنود غير المؤكدة موضّحة أسفل كل صنف وفي الملاحظات.",
       notesTitle: "ملاحظات",
-      notesDisclaimer:
-        "هذه ملاحظات منقولة كما وردت في المصدر المطبوع، وليست سياسة مؤكدة حاليًا من المطعم.",
-      footerSlogan: "طعم له أصل",
-      footerStatus: "نسخة معاينة داخلية — غير منشورة",
+      footStatus: "نسخة معاينة — الأسعار قيد التأكيد",
       egp: "جنيه",
-      printedNotesHeading: "ملاحظات مطبوعة على المنيو",
-      reviewNotesHeading: "نقاط تحتاج تأكيد المطعم",
       unconfirmedPortion: "الأحجام غير مؤكدة",
-      needsConfirm: "يحتاج تأكيد",
+      needsConfirm: "السعر يحتاج تأكيد",
+      nameDiffers: "الاسم المطبوع مختلف بين العربية والإنجليزية",
     },
     en: {
-      draftBanner:
-        "Draft menu transcribed from the printed copy — pending restaurant confirmation of prices and availability.",
+      coverKicker: "The full menu — all prices in Egyptian pounds",
+      draftLine:
+        "Transcribed from the printed menu, pending the restaurant's confirmation of prices and availability. Unconfirmed items are marked below the dish and listed in the notes.",
       notesTitle: "Notes",
-      notesDisclaimer:
-        "These notes are carried over from the printed source as written, not a policy currently confirmed by the restaurant.",
-      footerSlogan: "A taste with roots",
-      footerStatus: "Internal preview copy — not published",
+      footStatus: "Preview copy — prices pending confirmation",
       egp: "EGP",
-      printedNotesHeading: "Printed on the menu",
-      reviewNotesHeading: "Needs restaurant confirmation",
-      unconfirmedPortion: "sizes unconfirmed",
-      needsConfirm: "needs confirmation",
+      unconfirmedPortion: "portion sizes not confirmed",
+      needsConfirm: "price needs confirmation",
+      nameDiffers: "printed Arabic and English names differ",
     },
   };
 
-  // Grill items whose printed prices are NOT the standard 1/2·1/3·1/4 kg columns.
+  // Grill items excluded from the ½ / ⅓ / ¼ kg table. Of these, only grilled
+  // chicken has portion labels the restaurant has not confirmed — the other two
+  // are simply single-price dishes, so flagging them would be a false warning.
   var GRILL_NON_WEIGHT = ["Grilled chicken", "Grilled lamb knuckle", "Menofy special meal"];
 
-  // Printed notes are transcribed in Arabic only in the source JSON; review notes
-  // (Claude's transcription caveats) are in English only. English/Arabic pairs
-  // below are translations added for bilingual display — the source language is
-  // authoritative; these translations have not been separately verified.
+  // Full-bleed photograph placed before a chapter. Each image honestly depicts
+  // the section it introduces — do not move these without checking the photo.
+  var PLATES = {
+    "grill-specials": { src: "photo-skillet.jpg", alt: { ar: "طاسة كبدة", en: "Liver skillet" } },
+    casseroles: { src: "photo-tagine.jpg", alt: { ar: "طاجن في قدر فخار", en: "Casserole in a clay pot" } },
+  };
+
+  // Printed notes exist in Arabic only in the source JSON; the English
+  // versions below are translations — the printed Arabic is authoritative.
   var PRINTED_NOTES_EN = [
     "Prices include VAT.",
     "12% is added for dine-in.",
     "Any salad, takeaway: 27 EGP.",
   ];
-  var REVIEW_NOTES_AR = [
-    "يجب أن يؤكد المطعم الأسعار الحالية ومدى التوفر.",
-    "فرخة مشوية: السعران المطبوعان ١٨٤ و٣٦٨ جنيهًا؛ مسميات الحجم غير مؤكدة، ولذلك لم تُدرَج ضمن أعمدة الوزن القياسية.",
-    "طاجن فريك باللحمة: السعر ٣٥٣ جنيهًا قراءة مبدئية وتحتاج تأكيدًا.",
-    "بيريل / فيروز: النص العربي المطبوع يختلف عن النص الإنجليزي المطبوع، ويحتاج تأكيدًا من المطعم.",
-    "ريش بتلو: لا يوجد سعر ثالث مطبوع؛ لم يُفترض.",
-  ];
+
+  var AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
 
   var state = { lang: "ar" };
+  var scrollObserver = null;
 
-  function t(key) {
-    return UI[state.lang][key];
-  }
+  function t(key) { return UI[state.lang][key]; }
 
-  function el(tag, cls, html) {
+  function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
-    if (html !== undefined) e.innerHTML = html;
+    if (text !== undefined) e.textContent = text;
     return e;
   }
 
-  function priceCell(v) {
-    if (v === null || v === undefined) return el("span", "price-cell dash", "—");
-    return el("span", "price-cell", String(v));
+  function bilingual(tag, cls, ar, en) {
+    var e = el(tag, cls);
+    e.appendChild(el("span", "ar", ar));
+    e.appendChild(el("span", "en", en));
+    return e;
   }
 
-  function buildItemNameNode(item) {
-    var wrap = el("div", "item-name");
-    wrap.appendChild(el("span", "n-ar", item.ar));
-    wrap.appendChild(el("span", "n-en", item.en));
+  function chapterNumeral(idx) {
+    var n = idx + 1;
+    var s = n < 10 ? "0" + n : String(n);
+    if (state.lang !== "ar") return s;
+    return s.split("").map(function (d) { return AR_DIGITS[Number(d)]; }).join("");
+  }
+
+  /* ---------- rows ---------- */
+
+  function nameNode(item, noteText) {
+    var wrap = el("div", "name");
+    wrap.appendChild(el("span", "ar", item.ar));
+    wrap.appendChild(el("span", "en", item.en));
+    if (noteText) wrap.appendChild(el("span", "note", noteText));
     return wrap;
   }
 
-  function buildGrid3Row(item) {
-    var row = el("div", "item-row grid3");
-    row.appendChild(buildItemNameNode(item));
+  function cell(value) {
+    if (value === null || value === undefined) return el("span", "cell none", "—");
+    return el("span", "cell", String(value));
+  }
+
+  function colsRow(item) {
+    var row = el("div", "row cols");
+    row.appendChild(nameNode(item));
     var p = item.printedPrices;
-    row.appendChild(priceCell(p[0]));
-    row.appendChild(priceCell(p[1]));
-    row.appendChild(priceCell(p.length > 2 ? p[2] : null));
+    row.appendChild(cell(p[0]));
+    row.appendChild(cell(p[1]));
+    row.appendChild(cell(p.length > 2 ? p[2] : null));
     return row;
   }
 
-  function buildPlainRow(item, opts) {
-    opts = opts || {};
-    var row = el("div", "item-row plain");
-    row.appendChild(buildItemNameNode(item));
-    var priceWrap = el("span", "price-simple");
-    var priceText = item.printedPrices.join(" / ");
-    priceWrap.textContent = priceText;
-    var egp = el("span", "egp", t("egp"));
-    priceWrap.appendChild(egp);
-    if (opts.flag) {
-      var flag = el("span", "flag", opts.flag);
-      priceWrap.appendChild(flag);
-    }
-    row.appendChild(priceWrap);
+  function singleRow(item, noteText) {
+    var row = el("div", "row single");
+    row.appendChild(nameNode(item, noteText));
+    var price = el("span", "price", item.printedPrices.join(" / "));
+    price.appendChild(el("span", "cur", t("egp")));
+    row.appendChild(price);
     return row;
   }
 
-  function buildSection(group) {
-    var section = el("section", "cat-section");
+  /* ---------- chapters ---------- */
+
+  function plateFor(groupId) {
+    var spec = PLATES[groupId];
+    if (!spec) return null;
+    var fig = el("figure", "plate");
+    var img = document.createElement("img");
+    img.src = spec.src;
+    img.alt = spec.alt[state.lang];
+    img.loading = "lazy";
+    fig.appendChild(img);
+    return fig;
+  }
+
+  function itemNote(item, isNonWeightGrill) {
+    if (item.en === "Grilled chicken") return t("unconfirmedPortion");
+    if (item.en === "Birell / Fayrouz") return t("nameDiffers");
+    if (item.reviewNote) return t("needsConfirm");
+    return null;
+  }
+
+  function buildChapter(group, idx) {
+    var section = el("section", "chapter");
     section.id = "cat-" + group.id;
 
-    var heading = el("div", "cat-heading");
-    heading.appendChild(el("span", "cat-ar", group.ar));
-    heading.appendChild(el("span", "cat-en", group.en));
-    section.appendChild(heading);
-    section.appendChild(el("div", "cat-rule"));
+    section.appendChild(el("span", "chapter-num", chapterNumeral(idx)));
+    section.appendChild(bilingual("h2", "chapter-title", group.ar, group.en));
+    section.appendChild(el("div", "chapter-rule"));
 
     var isGrills = group.id === "grills";
-    var hasWeightHead = false;
+    var headDone = false;
 
     group.items.forEach(function (item) {
-      var priceCount = item.printedPrices.length;
-      var isNonWeightGrill = isGrills && GRILL_NON_WEIGHT.indexOf(item.en) !== -1;
+      var nonWeight = isGrills && GRILL_NON_WEIGHT.indexOf(item.en) !== -1;
 
-      if (isGrills && priceCount >= 2 && !isNonWeightGrill) {
-        if (!hasWeightHead) {
+      if (isGrills && item.printedPrices.length >= 2 && !nonWeight) {
+        if (!headDone) {
           var head = el("div", "weight-head");
           head.appendChild(el("span", null, ""));
           MENU_DATA.grillColumnOrder.forEach(function (col) {
-            var label = state.lang === "ar" ? col.ar : col.kg + " kg";
-            head.appendChild(el("span", null, label));
+            head.appendChild(el("span", null, state.lang === "ar" ? col.ar : col.kg + " kg"));
           });
           section.appendChild(head);
-          hasWeightHead = true;
+          headDone = true;
         }
-        section.appendChild(buildGrid3Row(item));
+        section.appendChild(colsRow(item));
       } else {
-        var flag = null;
-        if (item.en === "Grilled chicken") flag = t("unconfirmedPortion");
-        else if (item.reviewNote) flag = t("needsConfirm");
-        var row = buildPlainRow(item, { flag: flag });
-        if (item.reviewNote) row.title = item.reviewNote;
-        section.appendChild(row);
+        section.appendChild(singleRow(item, itemNote(item, nonWeight)));
       }
     });
 
@@ -149,81 +165,83 @@
   function renderMenu() {
     var container = document.getElementById("menuSections");
     container.innerHTML = "";
-    MENU_DATA.groups.forEach(function (group) {
-      container.appendChild(buildSection(group));
+    MENU_DATA.groups.forEach(function (group, idx) {
+      var plate = plateFor(group.id);
+      if (plate) container.appendChild(plate);
+      container.appendChild(buildChapter(group, idx));
     });
   }
 
-  function renderCatNav() {
+  /* ---------- nav ---------- */
+
+  function renderNav() {
     var nav = document.getElementById("catNav");
     nav.innerHTML = "";
     MENU_DATA.groups.forEach(function (group, idx) {
       var btn = el("button", "cat-tab" + (idx === 0 ? " active" : ""));
       btn.type = "button";
       btn.dataset.target = "cat-" + group.id;
-      var arSpan = el("span", null, group.ar);
-      var enSpan = el("span", null, group.en);
-      arSpan.style.display = "";
-      btn.appendChild(arSpan);
-      btn.appendChild(document.createTextNode(" "));
-      btn.appendChild(enSpan);
-      // Show only the active-language label via CSS-driven [dir] rules is awkward
-      // per-tab, so toggle directly here based on current language.
-      arSpan.className = "tab-ar";
-      enSpan.className = "tab-en";
+      btn.appendChild(el("span", "ar", group.ar));
+      btn.appendChild(el("span", "en", group.en));
       btn.addEventListener("click", function () {
         var target = document.getElementById(btn.dataset.target);
-        if (target) {
-          var headerH = document.querySelector(".menu-header").offsetHeight;
-          var top = target.getBoundingClientRect().top + window.pageYOffset - headerH - 8;
-          window.scrollTo({ top: top, behavior: "smooth" });
-        }
+        if (!target) return;
+        var barH = document.getElementById("bar").offsetHeight;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - barH - 10;
+        window.scrollTo({ top: top, behavior: "smooth" });
       });
       nav.appendChild(btn);
     });
-    applyTabLanguage();
   }
 
-  function applyTabLanguage() {
-    var showAr = state.lang === "ar";
-    document.querySelectorAll(".tab-ar").forEach(function (s) {
-      s.style.display = showAr ? "" : "none";
-    });
-    document.querySelectorAll(".tab-en").forEach(function (s) {
-      s.style.display = showAr ? "none" : "";
-    });
+  function watchChapters() {
+    var chapters = [].slice.call(document.querySelectorAll(".chapter"));
+    var tabs = [].slice.call(document.querySelectorAll(".cat-tab"));
+    if (scrollObserver) { scrollObserver.disconnect(); scrollObserver = null; }
+    if (!chapters.length || !("IntersectionObserver" in window)) return;
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          var id = entry.target.id;
+          tabs.forEach(function (tab) {
+            var on = tab.dataset.target === id;
+            tab.classList.toggle("active", on);
+            if (on && tab.scrollIntoView) {
+              tab.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+            }
+          });
+        });
+      },
+      { rootMargin: "-30% 0px -58% 0px", threshold: 0 }
+    );
+    chapters.forEach(function (c) { observer.observe(c); });
+    scrollObserver = observer;
   }
+
+  /* ---------- notes ---------- */
 
   function renderNotes() {
-    var list = document.getElementById("printedNotesList");
-    list.innerHTML = "";
-
-    var printedHeading = el("li", "notes-heading", "<strong>" + t("printedNotesHeading") + "</strong>");
-    printedHeading.style.color = "var(--ink)";
-    list.appendChild(printedHeading);
-
-    var printedSrc = state.lang === "ar" ? MENU_DATA.printedNotes : PRINTED_NOTES_EN;
-    printedSrc.forEach(function (n) {
-      list.appendChild(el("li", null, n));
-    });
-
-    var reviewHeading = el("li", "notes-heading", "<strong>" + t("reviewNotesHeading") + "</strong>");
-    reviewHeading.style.marginTop = "10px";
-    list.appendChild(reviewHeading);
-
-    var reviewSrc = state.lang === "ar" ? REVIEW_NOTES_AR : MENU_DATA.reviewNotes;
-    reviewSrc.forEach(function (n) {
-      list.appendChild(el("li", null, n));
-    });
+    var host = document.getElementById("notesList");
+    host.innerHTML = "";
+    var items = state.lang === "ar" ? MENU_DATA.printedNotes : PRINTED_NOTES_EN;
+    var wrap = el("div", "notes-group");
+    var ul = document.createElement("ul");
+    items.forEach(function (n) { ul.appendChild(el("li", null, n)); });
+    wrap.appendChild(ul);
+    host.appendChild(wrap);
   }
+
+  /* ---------- language ---------- */
 
   function applyStaticText() {
     document.querySelectorAll("[data-i18n]").forEach(function (node) {
-      var key = node.getAttribute("data-i18n");
-      node.textContent = t(key);
+      node.textContent = t(node.getAttribute("data-i18n"));
     });
-    var current = document.querySelector("[data-lang-current]");
-    if (current) current.textContent = state.lang === "ar" ? "EN" : "AR";
+    document.querySelectorAll("[data-lang-current]").forEach(function (node) {
+      node.textContent = state.lang === "ar" ? "EN" : "AR";
+    });
   }
 
   function setLang(lang) {
@@ -231,82 +249,33 @@
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     applyStaticText();
-    applyTabLanguage();
     renderNotes();
-    // grill weight-head labels differ by language — re-render menu sections
     renderMenu();
-    initActiveTabOnScroll();
-    try {
-      localStorage.setItem("km-menu-lang", lang);
-    } catch (e) {
-      /* private mode / storage blocked — fall back silently, default stays ar */
-    }
+    watchChapters();
+    try { localStorage.setItem("km-menu-lang", lang); } catch (e) { /* storage blocked */ }
   }
 
-  function initLangToggle() {
-    var btn = document.getElementById("langToggle");
-    btn.addEventListener("click", function () {
-      setLang(state.lang === "ar" ? "en" : "ar");
-    });
-  }
-
-  function initTopButton() {
-    var btn = document.getElementById("topBtn");
-    window.addEventListener("scroll", function () {
-      btn.classList.toggle("show", window.scrollY > 480);
-    });
-    btn.addEventListener("click", function () {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-  }
-
-  var scrollObserver = null;
-
-  function initActiveTabOnScroll() {
-    var sections = Array.prototype.slice.call(document.querySelectorAll(".cat-section"));
-    var tabs = Array.prototype.slice.call(document.querySelectorAll(".cat-tab"));
-    if (scrollObserver) {
-      scrollObserver.disconnect();
-      scrollObserver = null;
-    }
-    if (!sections.length || !("IntersectionObserver" in window)) return;
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            var id = entry.target.id;
-            tabs.forEach(function (tab) {
-              tab.classList.toggle("active", tab.dataset.target === id);
-            });
-          }
-        });
-      },
-      { rootMargin: "-35% 0px -55% 0px", threshold: 0 }
-    );
-    sections.forEach(function (s) {
-      observer.observe(s);
-    });
-    scrollObserver = observer;
-  }
+  /* ---------- boot ---------- */
 
   function boot() {
     var saved = null;
-    try {
-      saved = localStorage.getItem("km-menu-lang");
-    } catch (e) {
-      /* ignore */
-    }
+    try { saved = localStorage.getItem("km-menu-lang"); } catch (e) { /* ignore */ }
     state.lang = saved === "en" ? "en" : "ar";
     document.documentElement.lang = state.lang;
     document.documentElement.dir = state.lang === "ar" ? "rtl" : "ltr";
 
-    renderCatNav();
+    renderNav();
     renderMenu();
     renderNotes();
     applyStaticText();
-    initLangToggle();
-    initTopButton();
-    initActiveTabOnScroll();
+    watchChapters();
+
+    document.querySelectorAll(".lang-toggle").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        setLang(state.lang === "ar" ? "en" : "ar");
+      });
+    });
+
   }
 
   if (document.readyState === "loading") {
