@@ -16,7 +16,7 @@ A standalone digital menu for sharing on Facebook and Messenger, kept separate
 from the main website (whose own menu is untouched).
 
 - **Source of truth:** `menu-draft/printed-menu-transcription.json` in the
-  handoff pack — 130 items, 12 categories, transcribed from the printed menu.
+  handoff pack — 129 items, 12 categories, transcribed from the printed menu.
   Not the older Talabat/marketplace catalogue used inside the main website.
 - **Bilingual:** Arabic-first (RTL) with a full English (LTR) toggle. The choice
   is remembered per device, falling back to Arabic if storage is unavailable.
@@ -44,13 +44,18 @@ from the Notes section at the client's request (it read as internal QA language 
 a customer-facing page); the per-item notes and the draft line under the cover are
 what keep the page honest.
 
-- **Grilled chicken** (فرخة مشوية) — printed 184 / 368 EGP. Portion labels are
-  NOT confirmed, so it is deliberately kept out of the ½/⅓/¼ kg table.
-- **Freekeh casserole with meat** (طاجن فريك باللحمة) — price read provisionally
-  as 353 EGP.
-- **Birell / Fayrouz** (بيريل — فيروز) — printed Arabic and English names disagree.
-- **Veal chops** (ريش بتلو) — only two printed prices exist; the ¼ kg column shows
-  a dash rather than an invented number.
+All four items flagged in the first release were confirmed by the owner on
+2026-09-08 and their warnings removed:
+
+- **Grilled chicken** (فرخة مشوية) — 184 is a half chicken, 368 a whole one. Now
+  labelled on the row. Still outside the ½/⅓/¼ kg table, because it is not sold
+  by weight — that exclusion is not a warning.
+- **Freekeh casserole with meat** (طاجن فريك باللحمة) — 353 EGP confirmed.
+- **Birell / Fayrouz** — removed from the menu entirely at the owner's request.
+- **Veal chops** (ريش بتلو) — confirmed to have no ¼ kg price; the dash stands.
+
+Still unconfirmed: whether the remaining printed prices are current. That is why
+the draft line under the cover and the footer status remain.
 - Printed policy notes (VAT included, +12% dine-in, takeaway salad 27 EGP) appear
   in the Notes section, transcribed as printed.
 - Nothing from the old cover photo's hotline/branch text is used anywhere.

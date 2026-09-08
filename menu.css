@@ -293,6 +293,31 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-
   gap: 8px;
   align-items: baseline;
 }
+.row.portions { display: block; }
+.portion-list { margin-top: 8px; }
+.portion-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+  padding: 4px 0;
+  padding-inline-start: 14px;
+  position: relative;
+}
+.portion-line::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.85em;
+  width: 6px; height: 1px;
+  background: var(--gold-line);
+}
+.portion-label {
+  font-size: 14px;
+  color: var(--ink-70);
+}
+[dir="ltr"] .portion-label { font-size: 14.5px; }
+
 .row.single {
   display: flex;
   justify-content: space-between;

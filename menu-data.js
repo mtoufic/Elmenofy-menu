@@ -2,7 +2,7 @@
 // Regenerate from the source JSON if prices/items change.
 const MENU_DATA = {
   "source": "source/menu-items.JPG",
-  "status": "Draft from supplied photographs. User confirmed standard grill columns: half kilogram, third kilogram, quarter kilogram. Restaurant confirmation of current prices remains pending. Do not add to website or publish without authorization.",
+  "status": "Transcribed from the printed menu. Owner confirmed the four previously flagged items on 2026-09-08. Whether the remaining printed prices are current has not been confirmed.",
   "currency": "EGP",
   "groups": [
     {
@@ -256,7 +256,17 @@ const MENU_DATA = {
           "printedPrices": [
             184,
             368
-          ]
+          ],
+          "portions": {
+            "ar": [
+              "نص فرخة",
+              "فرخة كاملة"
+            ],
+            "en": [
+              "Half chicken",
+              "Whole chicken"
+            ]
+          }
         },
         {
           "ar": "موزة مشوية ضاني",
@@ -291,8 +301,7 @@ const MENU_DATA = {
           "en": "Freekeh casserole with meat",
           "printedPrices": [
             353
-          ],
-          "reviewNote": "رقم السعر صغير؛ قراءة مبدئية ٣٥٣ وتحتاج تأكيدًا من الأصل."
+          ]
         },
         {
           "ar": "أوزي ضاني",
@@ -960,14 +969,6 @@ const MENU_DATA = {
           ]
         },
         {
-          "ar": "بيريل — فيروز",
-          "en": "Birell / Fayrouz",
-          "printedPrices": [
-            41
-          ],
-          "reviewNote": "العربية المطبوعة: بيريل — فيروز؛ الإنجليزية المطبوعة مختلفة (Berrier — Club Soda)."
-        },
-        {
           "ar": "كوكتيل فواكه مشكل",
           "en": "Fresh fruit cocktail",
           "printedPrices": [
@@ -1040,11 +1041,11 @@ const MENU_DATA = {
     "أي نوع سلطة تيك أواي: ٢٧ جنيهًا."
   ],
   "reviewNotes": [
-    "Restaurant must confirm current prices and availability.",
-    "Grilled chicken has printed prices 184 and 368 EGP; its portion labels remain unconfirmed. Do not assign the standard grill weight columns to it.",
-    "Freekeh casserole price was provisionally read as 353 EGP and needs confirmation.",
-    "Birell / Fayrouz Arabic text differs from printed English text. Confirm with restaurant.",
-    "Veal chops has no printed third price. Do not invent it."
+    "Owner confirmed 2026-09-08: grilled chicken 184 = half chicken, 368 = whole chicken.",
+    "Owner confirmed 2026-09-08: freekeh casserole with meat is 353 EGP.",
+    "Owner instructed 2026-09-08: remove Birell / Fayrouz from the menu entirely.",
+    "Owner confirmed 2026-09-08: veal chops has no quarter-kilo price; only the two printed prices exist.",
+    "Not yet confirmed: whether the remaining printed prices are still current."
   ],
   "grillColumnOrder": [
     {

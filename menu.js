@@ -9,9 +9,7 @@
       notesTitle: "ملاحظات",
       footStatus: "نسخة معاينة — الأسعار قيد التأكيد",
       egp: "جنيه",
-      unconfirmedPortion: "الأحجام غير مؤكدة",
       needsConfirm: "السعر يحتاج تأكيد",
-      nameDiffers: "الاسم المطبوع مختلف بين العربية والإنجليزية",
     },
     en: {
       coverKicker: "The full menu — all prices in Egyptian pounds",
@@ -20,9 +18,7 @@
       notesTitle: "Notes",
       footStatus: "Preview copy — prices pending confirmation",
       egp: "EGP",
-      unconfirmedPortion: "portion sizes not confirmed",
       needsConfirm: "price needs confirmation",
-      nameDiffers: "printed Arabic and English names differ",
     },
   };
 
@@ -99,6 +95,25 @@
     return row;
   }
 
+  // Items sold in named portions (e.g. half / whole chicken) get one line per
+  // portion, each with its own price. Never rely on two prices and two labels
+  // lining up positionally — in RTL that pairing is fragile and hard to read.
+  function portionsRow(item) {
+    var row = el("div", "row portions");
+    row.appendChild(nameNode(item));
+    var list = el("div", "portion-list");
+    item.portions[state.lang].forEach(function (label, idx) {
+      var line = el("div", "portion-line");
+      line.appendChild(el("span", "portion-label", label));
+      var price = el("span", "price", String(item.printedPrices[idx]));
+      price.appendChild(el("span", "cur", t("egp")));
+      line.appendChild(price);
+      list.appendChild(line);
+    });
+    row.appendChild(list);
+    return row;
+  }
+
   function singleRow(item, noteText) {
     var row = el("div", "row single");
     row.appendChild(nameNode(item, noteText));
@@ -122,9 +137,10 @@
     return fig;
   }
 
-  function itemNote(item, isNonWeightGrill) {
-    if (item.en === "Grilled chicken") return t("unconfirmedPortion");
-    if (item.en === "Birell / Fayrouz") return t("nameDiffers");
+  // The note line under a dish name. Portion labels (e.g. half / whole chicken)
+  // sit here so they line up with the prices shown on the same row, in order.
+  // reviewNote still drives a "needs confirmation" note if any item regains one.
+  function itemNote(item) {
     if (item.reviewNote) return t("needsConfirm");
     return null;
   }
@@ -155,7 +171,11 @@
         }
         section.appendChild(colsRow(item));
       } else {
-        section.appendChild(singleRow(item, itemNote(item, nonWeight)));
+        if (item.portions) {
+          section.appendChild(portionsRow(item));
+        } else {
+          section.appendChild(singleRow(item, itemNote(item)));
+        }
       }
     });
 
